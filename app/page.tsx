@@ -1,20 +1,41 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
 import {
-  Avatar,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Input,
-} from "@heroui/react";
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import { Loader } from "@/components/ai-elements/loader";
+import { Message, MessageContent } from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputMessage,
+  PromptInputSubmit,
+  PromptInputTextarea,
+} from "@/components/ai-elements/prompt-input";
+import { Response } from "@/components/ai-elements/response";
+import { useChat } from "@ai-sdk/react";
+import { Card, CardBody, CardHeader } from "@heroui/react";
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
 
 export default function Chat() {
-  const { messages, sendMessage } = useChat();
+  const { messages, sendMessage, status } = useChat();
   const [input, setInput] = useState("");
+  const handleSubmit = (message: PromptInputMessage) => {
+    const hasText = Boolean(message.text);
+    const hasAttachments = Boolean(message.files?.length);
+
+    if (!(hasText || hasAttachments)) {
+      return;
+    }
+
+    sendMessage({
+      text: message.text || "Sent with attachments",
+      files: message.files,
+    });
+    setInput("");
+  };
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl py-10 mx-auto stretch">
@@ -24,58 +45,45 @@ export default function Chat() {
         </CardHeader>
         <CardBody>
           <div className="space-y-4 h-[60vh] overflow-y-auto p-4">
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex gap-4 ${
-                  m.role === "user" ? "flex-row-reverse" : "flex-row"
-                }`}
-              >
-                {m.role === "user" ? (
-                  <Avatar name="User" color="primary" className="hidden" />
-                ) : (
-                  <Avatar name="FB" />
-                )}
-                <div
-                  className={`p-4 rounded-lg max-w-[70%] ${
-                    m.role === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-zinc-100 dark:bg-zinc-800"
-                  }`}
-                >
-                  {m.parts.map((part, i) => {
-                    switch (part.type) {
-                      case "text":
-                        return (
-                          <ReactMarkdown key={i}>{part.text}</ReactMarkdown>
-                        );
-                    }
-                  })}
-                </div>
-              </div>
-            ))}
+            <Conversation>
+              <ConversationContent>
+                {messages.map((m) => (
+                  <Message from={m.role} key={m.id}>
+                    <MessageContent variant="contained">
+                      {m.parts.map((part, i) => {
+                        switch (part.type) {
+                          case "text":
+                            return (
+                              <Response key={`${m.id}-${i}`}>
+                                {part.text}
+                              </Response>
+                            );
+                        }
+                      })}
+                    </MessageContent>
+                  </Message>
+                ))}
+                {status === "submitted" && <Loader />}
+              </ConversationContent>
+              <ConversationScrollButton />
+            </Conversation>
           </div>
         </CardBody>
       </Card>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          sendMessage({ text: input });
-          setInput("");
-        }}
-        className="flex items-center w-full mt-4"
-      >
-        <Input
-          className="w-full"
-          value={input}
-          placeholder="Ask me about food..."
-          onChange={(e) => setInput(e.currentTarget.value)}
-        />
-        <Button type="submit" className="ml-2">
-          Send
-        </Button>
-      </form>
+      <PromptInput onSubmit={handleSubmit} className="m-4 p-2">
+        <PromptInputBody>
+          <PromptInputTextarea
+            value={input}
+            placeholder="Say something..."
+            onChange={(e) => setInput(e.currentTarget.value)}
+            className="pr-12"
+          />
+          <PromptInputSubmit
+            status={status === "streaming" ? "streaming" : "ready"}
+            disabled={!input.trim()}
+          />
+        </PromptInputBody>
+      </PromptInput>
     </div>
   );
 }

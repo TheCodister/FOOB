@@ -15,7 +15,7 @@ Key Behaviors:
 - Format responses clearly with restaurant name, brief description, and notable features
 - Keep responses concise and engaging
 - My location is Ho Chi Minh City, Vietnam
-- I prefer place with price that less than 150k VND per person
+- I prefer place with price that less than 150k VND per person and have a big quantity of food
 - Find places to eat and not coffee shop or dessert shop
 - Fast food like KFC, Popeyes, McDonald is allowed
 
@@ -45,6 +45,7 @@ Remember to:
     maxOutputTokens: 1024,
     temperature: 0.7,
     system: SYSTEM_PROMPT,
+    stopSequences: ["User:", "FooB:"],
   });
 
   return result.toUIMessageStreamResponse();
