@@ -45,7 +45,6 @@ Remember to:
     maxOutputTokens: 1024,
     temperature: 0.7,
     system: SYSTEM_PROMPT,
-    stopSequences: ["User:", "FooB:"],
   });
 
   return result.toUIMessageStreamResponse();

@@ -70,19 +70,19 @@ export default function Chat() {
           </div>
         </CardBody>
       </Card>
-      <PromptInput onSubmit={handleSubmit} className="m-4 p-2">
+      <PromptInput onSubmit={handleSubmit} className="m-4 flex justify-between items-center">
         <PromptInputBody>
           <PromptInputTextarea
             value={input}
             placeholder="Say something..."
             onChange={(e) => setInput(e.currentTarget.value)}
-            className="pr-12"
+            className=""
           />
+        </PromptInputBody>
           <PromptInputSubmit
             status={status === "streaming" ? "streaming" : "ready"}
             disabled={!input.trim()}
           />
-        </PromptInputBody>
       </PromptInput>
     </div>
   );
